@@ -42,14 +42,14 @@ Handle<Value> ConvertToJSException(PyObject* py_exception_type, PyObject* py_exc
 
     Local<String> js_message;
     if (py_exception_value != NULL) {
-        if (PyObject_TypeCheck(py_exception_value, &PyString_Type)) {
-            js_message = String::NewFromUtf8(Isolate::GetCurrent(), PyString_AsString(py_exception_value));
+        if (PyObject_TypeCheck(py_exception_value, &PyUnicode_Type)) {
+            js_message = String::NewFromUtf8(Isolate::GetCurrent(), PyUnicode_AsUTF8(py_exception_value));
         } else if (PyObject_TypeCheck(py_exception_value, &PyTuple_Type) && 
             PyTuple_Size(py_exception_value) > 0) {
-            js_message = String::NewFromUtf8(Isolate::GetCurrent(), PyString_AsString(PyTuple_GetItem(py_exception_value, 0)));
+            js_message = String::NewFromUtf8(Isolate::GetCurrent(), PyUnicode_AsUTF8(PyTuple_GetItem(py_exception_value, 0)));
         } else {
             PyObject* py_exception_value_string = PyObject_Str(py_exception_value);
-            js_message = String::NewFromUtf8(Isolate::GetCurrent(), PyString_AsString(py_exception_value_string));
+            js_message = String::NewFromUtf8(Isolate::GetCurrent(), PyUnicode_AsUTF8(py_exception_value_string));
             Py_XDECREF(py_exception_value_string);            
         }
     } else {
@@ -154,7 +154,7 @@ PyObject* ConvertToPythonException(Handle<Value> js_exception)
 
     PyObject* py_args = PyTuple_New(1);
     String::Utf8Value js_message_string(js_message);
-    PyObject* py_arg = PyString_FromString(*js_message_string);
+    PyObject* py_arg = PyUnicode_FromString(*js_message_string);
     PyTuple_SET_ITEM(py_args, 0, py_arg);
 
     PyObject* py_exception = PyObject_CallObject(py_exception_type, py_args);

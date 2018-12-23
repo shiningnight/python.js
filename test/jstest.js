@@ -31,26 +31,26 @@ function test() {
 
 	console.log(pytest.test_07({'aaa': 111, 'bbb': 222}).valueOf());
 
-	console.log(pytest.test_08({
-		'aaa': 111, 222: 'bbb', 'ccc': true, 'ddd': 33.3, 
-		'eee': function (x, y) { return x + y; }, 
-		'fff': [444, '555', 666], 
-		'ggg': {'hhh': 777, 888: 'iii', 'jjj': function (x, y) { return x * y; }}, 
-		// 'kkk': this
-	}).valueOf());
+	// console.log(pytest.test_08({
+	// 	'aaa': 111, 222: 'bbb', 'ccc': true, 'ddd': 33.3,
+	// 	'eee': function (x, y) { return x + y; },
+	// 	'fff': [444, '555', 666],
+	// 	'ggg': {'hhh': 777, 888: 'iii', 'jjj': function (x, y) { return x * y; }},
+	// 	// 'kkk': this
+	// }).valueOf());
 
-	console.log(pytest.test_09(function (caller, x, y, z) {
-		console.log(caller, ' -> js_func_01');
-		console.log('x: ', x.valueOf());
-		console.log('y: ', y.valueOf());
-		return z;
-	})('js_test', [222, '333', 444], {'aaa': 555, 666: 'bbb', 'ccc': 777, 'ddd': 88.8})('js_test', 8, 9));
+	// console.log(pytest.test_09(function (caller, x, y, z) {
+	// 	console.log(caller, ' -> js_func_01');
+	// 	console.log('x: ', x.valueOf());
+	// 	console.log('y: ', y.valueOf());
+	// 	return z;
+	// })('js_test', [222, '333', 444], {'aaa': 555, 666: 'bbb', 'ccc': 777, 'ddd': 88.8})('js_test', 8, 9));
 
-	try {
-		pytest.test_10(function () { throw('js_test_exception'); } );
-	} catch (e) {
-		console.log('js_test -> ', e, typeof(e));
-	}
+	// try {
+	// 	pytest.test_10(function () { throw('js_test_exception'); } );
+	// } catch (e) {
+	// 	console.log('js_test -> ', e, typeof(e));
+	// }
 
 	test_11 = pytest.Test_11();
 	console.log(test_11.get_aaa());
@@ -81,23 +81,23 @@ function test() {
 	console.log('py_test_14: ', typeof(py_test_14), 'js_test_14: ', typeof(js_test_14));
 	console.log(py_test_14(8).toString(), js_test_14(8).toString());
 
-	console.log(pytest.test_15(function () {
-		return this.aaa;
-	}.bind(pytest.test_15.data)));
+	// console.log(pytest.test_15(function () {
+	// 	return this.aaa;
+	// }.bind(pytest.test_15.data)));
 
-	console.log('test_16 begin');
-	pytest.test_16.async = true;
-	console.log(pytest.test_16());
-	console.log(pytest.test_16(false));
-	pytest.test_16.async_cb = function (error, result) {
-		console.log('js async error: ', error ? error.valueOf() : error, typeof(error));
-		console.log('js async result: ', result);
-	};
-	console.log(pytest.test_16());
-	console.log(pytest.test_16(false));
-	console.log('test_16 end');
+	// console.log('test_16 begin');
+	// pytest.test_16.async = true;
+	// console.log(pytest.test_16());
+	// console.log(pytest.test_16(false));
+	// pytest.test_16.async_cb = function (error, result) {
+	// 	console.log('js async error: ', error ? error.valueOf() : error, typeof(error));
+	// 	console.log('js async result: ', result);
+	// };
+	// console.log(pytest.test_16());
+	// console.log(pytest.test_16(false));
+	// console.log('test_16 end');
 
-	console.log(pytest.test_17().valueOf());
+	// console.log(pytest.test_17().valueOf());
 }
 
 for (var i = 0; i < 1; i++)

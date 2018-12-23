@@ -21,7 +21,7 @@ void import(const FunctionCallbackInfo<Value>& args)
     }
 
     String::Utf8Value js_module_name_string(args[0]->ToString());
-    PyObject* py_module_name = PyString_FromString(*js_module_name_string);
+    PyObject* py_module_name = PyUnicode_FromString(*js_module_name_string);
     PyObject* py_module = PyImport_Import(py_module_name);
     Py_XDECREF(py_module_name);
     if (py_module != NULL)

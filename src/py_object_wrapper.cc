@@ -51,16 +51,16 @@ PyObject* PyObjectWrapper::ConvertToPython(const Handle<Value>& js_value)
     } else if (js_value->IsNull()) {
         Py_RETURN_NONE;
     } else if (js_value->IsInt32()) {
-        return PyInt_FromLong(js_value->Int32Value());
+        return PyLong_FromLong(js_value->Int32Value());
     } else if (js_value->IsUint32()) {
-        return PyInt_FromLong(js_value->Uint32Value());
+        return PyLong_FromUnsignedLong(js_value->Uint32Value());
     } else if (js_value->IsNumber()) {
         return PyFloat_FromDouble(js_value->NumberValue());
     } else if (js_value->IsBoolean()) {
         return PyBool_FromLong(js_value->BooleanValue());
     } else if (js_value->IsString()) {
         String::Utf8Value js_value_string(js_value->ToString());
-        return PyString_FromString(*js_value_string);
+        return PyUnicode_FromString(*js_value_string);
     } else if (js_value->IsArray()) {
         Local<Array> js_array(Handle<Array>::Cast(js_value));
         int length = js_array->Length();
@@ -84,7 +84,7 @@ PyObject* PyObjectWrapper::ConvertToPython(const Handle<Value>& js_value)
         py_method_context_t* py_method_context = new py_method_context_t();
         py_method_context->js_function.Reset(Isolate::GetCurrent(), _js_function);
 
-        PyObject* py_self = PyCObject_FromVoidPtr(py_method_context, NULL);
+        PyObject* py_self = PyCapsule_New(py_method_context, NULL, NULL);
 
         PyObject* py_function = PyCFunction_New(py_method, py_self);
         Py_TYPE(py_function) = &PyCFunction_Type_x;
@@ -137,7 +137,7 @@ Handle<Value> PyObjectWrapper::ConvertToJS(PyObject* py_object)
     } else if (PyExceptionInstance_Check(py_object)) {
         Local<Value> js_exception = ConvertToJSException(py_object);
         return scope.Escape(js_exception);
-    } else if (PyMapping_Check(py_object) != 0) {
+    } else if (PyDict_Check(py_object)) {
         int length = (int)PyMapping_Length(py_object);
         Local<Object> js_object = Object::New(Isolate::GetCurrent());
         PyObject* py_keys = PyMapping_Keys(py_object);
@@ -177,7 +177,7 @@ PyObject* PyObjectWrapper::PythonNamedGetter(PyObject* py_object, const char* ke
 {
     PyThreadStateLock py_thread_lock;
 
-    PyObject* py_key = PyString_FromString(key);
+    PyObject* py_key = PyUnicode_FromString(key);
     PyObject* py_value = NULL;
 
     if (PyMapping_HasKey(py_object, py_key) != 0)
@@ -194,7 +194,7 @@ void PyObjectWrapper::PythonNamedSetter(PyObject* py_object, const char* key, Py
 {
     PyThreadStateLock py_thread_lock;
 
-    PyObject* py_key = PyString_FromString(key);
+    PyObject* py_key = PyUnicode_FromString(key);
 
     if (PyMapping_Check(py_object) != 0)
         PyObject_SetItem(py_object, py_key, py_value);
@@ -272,14 +272,11 @@ Handle<Value> PyObjectWrapper::New(PyObject* py_object)
     } else if (PyFloat_CheckExact(py_object)) {
         double value = PyFloat_AsDouble(py_object);
         js_value = Local<Value>::New(Isolate::GetCurrent(), Number::New(Isolate::GetCurrent(), value));
-    } else if (PyInt_CheckExact(py_object)) {
-        long value = PyInt_AsLong(py_object);
-        js_value = Local<Value>::New(Isolate::GetCurrent(), Integer::New(Isolate::GetCurrent(), (int32_t)value));
     } else if (PyLong_CheckExact(py_object)) {
         long value = PyLong_AsLong(py_object);
         js_value = Local<Value>::New(Isolate::GetCurrent(), Integer::New(Isolate::GetCurrent(), (int32_t)value));
-    } else if (PyString_CheckExact(py_object)) {
-        char* value = PyString_AsString(py_object);
+    } else if (PyUnicode_CheckExact(py_object)) {
+        char* value = PyUnicode_AsUTF8(py_object);
         if (value != NULL)
             js_value = Local<Value>::New(Isolate::GetCurrent(), String::NewFromUtf8(Isolate::GetCurrent(), value));
     } else if (PyBool_Check(py_object)) {
@@ -518,7 +515,7 @@ Handle<Value> PyObjectWrapper::InstanceToString(const FunctionCallbackInfo<Value
     if (py_string == NULL)
         return ThrowPythonException();
 
-    Local<String> js_string = String::NewFromUtf8(Isolate::GetCurrent(), PyString_AsString(py_string));
+    Local<String> js_string = String::NewFromUtf8(Isolate::GetCurrent(), PyUnicode_AsUTF8(py_string));
 
     Py_XDECREF(py_string);
 
@@ -549,7 +546,7 @@ void PyObjectWrapper::py_method_dealloc_x(PyObject* py_object)
     free(py_method);
 
     PyObject* py_self = py_function_object->m_self;
-    py_method_context_t* py_method_context = (py_method_context_t*)PyCObject_AsVoidPtr(py_self);
+    py_method_context_t* py_method_context = (py_method_context_t*)PyCapsule_GetContext(py_self);
     py_method_context->js_function.Reset();
     // free(py_method_context);
     delete py_method_context;
@@ -570,7 +567,7 @@ PyObject* PyObjectWrapper::py_method_function_x(PyObject* py_self, PyObject* py_
         js_argv[i] = New(py_item);
     }
 
-    py_method_context_t* py_method_context = (py_method_context_t*)PyCObject_AsVoidPtr(py_self);
+    py_method_context_t* py_method_context = (py_method_context_t*)PyCapsule_GetContext(py_self);
     Handle<Function> _js_function = 
         Local<Function>::New(Isolate::GetCurrent(), py_method_context->js_function);
 
