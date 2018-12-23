@@ -4,8 +4,6 @@ node_modules
 /cmake-build-debug/
 /CMakeLists.txt
 /cmake-build-release/
-/libs/
-/src/pyheader/
 /.vs/
 /python.js.*
 .idea/

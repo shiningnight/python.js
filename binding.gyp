@@ -27,7 +27,7 @@
           ]
         }],['OS=="win"',{
           "include_dirs": [
-            "src/pyheader"
+            "<(module_root_dir)/libs/pyheader"
           ],
           "link_settings": {
             "libraries": [
